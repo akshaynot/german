@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learn Deutsch Coach (German Learning)</title>
+    <!-- Link to Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Optional: Add custom base styles or component styles if needed */
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Using Inter as a modern font */
+        }
+        /* Add a subtle transition for visual feedback */
+        .option-button {
+            transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out, transform 0.1s ease;
+        }
+        .option-button:active {
+            transform: scale(0.97);
+        }
+        /* Simple pulse animation for feedback */
+        @keyframes pulse-correct {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+        @keyframes pulse-incorrect {
+             0%, 100% { transform: translateX(0); }
+             25% { transform: translateX(-3px); }
+             50% { transform: translateX(3px); }
+             75% { transform: translateX(-3px); }
+        }
+        .animate-pulse-correct { animation: pulse-correct 0.6s ease-in-out; }
+        .animate-pulse-incorrect { animation: pulse-incorrect 0.4s ease-in-out; }
+
+        /* Style for scrollbar (optional, Webkit browsers) */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #c5c5c5;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+        /* Style for file input button */
+        input[type="file"]::file-selector-button {
+          @apply px-3 py-1.5 mr-4 text-sm font-medium text-indigo-700 bg-indigo-100 border border-indigo-200 rounded-md cursor-pointer hover:bg-indigo-200 transition-colors;
+        }
+        input[type="file"] {
+          @apply text-sm text-gray-600;
+        }
+    </style>
+     <link rel="preconnect" href="https://fonts.googleapis.com">
+     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 text-gray-800 flex flex-col items-center min-h-screen p-4 md:p-6">
+
+    <header class="w-full max-w-4xl mb-6 md:mb-8 text-center">
+        <h1 class="text-3xl md:text-4xl font-bold text-indigo-700">Deutsch Coach</h1>
+        <p class="text-gray-600 mt-1">Learn German Vocabulary (from Hindi & English)</p>
+    </header>
+
+    <main class="w-full max-w-4xl space-y-6 md:space-y-8 flex flex-col items-center">
+
+        <!-- Word Coach Practice & Stats Sections Wrapper -->
+        <div class="flex flex-col md:flex-row gap-6 w-full items-start">
+
+            <!-- Word Coach Practice Section -->
+            <section id="practice" class="w-full md:flex-[2]">
+                <div id="wordCoachCard" class="bg-white rounded-xl shadow-lg p-6 md:p-8 text-center relative overflow-hidden transition-all duration-300 min-h-[320px] flex flex-col justify-between h-full">
+                    <!-- Score/Streak -->
+                    <div class="absolute top-4 right-5 text-sm text-gray-500">
+                        Score: <span id="score" class="font-semibold text-indigo-600">0</span> | Streak: <span id="streak" class="font-semibold text-amber-600">0</span>
+                    </div>
+                    <!-- Question Area -->
+                    <div class="mt-4">
+                        <p id="instructionText" class="text-sm text-gray-500 mb-2">Which word means:</p>
+                        <h3 id="questionWord" class="text-2xl md:text-3xl font-semibold text-gray-800 break-words min-h-[40px]"></h3>
+                        <p id="questionHint" class="text-base text-gray-500 mt-1 min-h-[24px]"></p>
+                    </div>
+                    <!-- Options Area -->
+                    <div id="optionsArea" class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 my-4 md:my-6">
+                        <button id="option1" data-is-correct="false" class="option-button w-full text-center p-3 md:p-4 border border-gray-300 rounded-lg text-indigo-700 font-medium hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-300 disabled:opacity-70 disabled:cursor-not-allowed break-words min-h-[60px] flex items-center justify-center"></button>
+                        <button id="option2" data-is-correct="false" class="option-button w-full text-center p-3 md:p-4 border border-gray-300 rounded-lg text-indigo-700 font-medium hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-300 disabled:opacity-70 disabled:cursor-not-allowed break-words min-h-[60px] flex items-center justify-center"></button>
+                    </div>
+                    <!-- Feedback/Skip Area -->
+                    <div id="feedbackArea" class="text-center">
+                        <button id="skipButton" class="text-sm text-gray-500 hover:text-indigo-600 px-3 py-1 rounded-full hover:bg-gray-100 transition-colors">Skip (छोड़ें)</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Progress/Stats Section -->
+            <section id="progress" class="w-full md:flex-[1] bg-white rounded-xl shadow-lg p-6 md:p-8">
+                <h2 class="text-xl md:text-2xl font-semibold text-indigo-700 mb-4">Your Stats (आपके आँकड़े)</h2>
+                <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 text-center">
+                    <div>
+                        <p class="text-sm text-gray-500">Highest Score</p>
+                        <p id="highScore" class="text-2xl font-semibold text-indigo-600">0</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Total Correct</p>
+                        <p id="correctCount" class="text-2xl font-semibold text-green-600">0</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Total Attempted</p>
+                        <p id="attemptedCount" class="text-2xl font-semibold text-gray-700">0</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Accuracy</p>
+                        <p id="accuracy" class="text-2xl font-semibold text-blue-600">0%</p>
+                    </div>
+                </div>
+                <div class="mt-6 text-center">
+                    <button id="resetProgress" class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300 transition-colors text-sm">Reset All Stats</button>
+                </div>
+                <p class="text-xs text-gray-400 text-center mt-4">Stats are saved in your browser's local storage.</p>
+            </section>
+
+        </div>
+
+
+        <!-- Vocabulary List Section -->
+        <section id="vocabulary" class="w-full bg-white rounded-xl shadow-lg p-6 md:p-8">
+            <h2 class="text-xl md:text-2xl font-semibold text-indigo-700 mb-4">Vocabulary List (शब्दावली)</h2>
+
+            <!-- Filter Input -->
+            <div class="mb-4">
+                <label for="filterInput" class="sr-only">Filter Words:</label>
+                <input type="text" id="filterInput" placeholder="Filter words... (फ़िल्टर करें)" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-300">
+            </div>
+
+            <!-- CSV Upload Area -->
+            <div class="mb-6 p-4 border border-dashed border-gray-300 rounded-lg bg-gray-50">
+                <h3 class="text-lg font-medium text-gray-700 mb-2">Update List via CSV</h3>
+                <p class="text-sm text-gray-500 mb-3">Upload a CSV file with columns: `german`, `english`, `pronunciation`, `hinglish` (header row required). This will replace the current list.</p>
+                <div class="flex flex-col sm:flex-row items-center gap-3">
+                    <input type="file" id="csvFileInput" accept=".csv" class="flex-grow">
+                    <button id="uploadCsvButton" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-300 transition-colors text-sm shrink-0 w-full sm:w-auto">
+                        Upload & Update List
+                    </button>
+                </div>
+                <p id="csvStatus" class="text-sm mt-2 h-5"></p> <!-- Status message area -->
+            </div>
+
+            <!-- Vocabulary Table -->
+            <div class="max-h-80 overflow-y-auto custom-scrollbar border border-gray-200 rounded-md">
+                <table id="vocabTable" class="w-full text-sm text-left">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-100 sticky top-0">
+                        <tr>
+                            <th scope="col" class="px-4 py-3">German (जर्मन)</th>
+                            <th scope="col" class="px-4 py-3">English (अंग्रेज़ी)</th>
+                            <th scope="col" class="px-4 py-3 hidden md:table-cell">Pronunciation</th>
+                            <th scope="col" class="px-4 py-3">Hinglish (हिंग्लिश)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="vocabTableBody" class="divide-y divide-gray-200">
+                        <!-- Rows added by JS -->
+                    </tbody>
+                </table>
+                 <p id="noResults" class="text-center text-gray-500 p-4 hidden">No matching words found.</p>
+            </div>
+        </section>
+
+
+    </main>
+
+    <footer class="w-full max-w-4xl mt-8 mb-4 text-center text-xs text-gray-500">
+        Happy Learning! Viel Spaß beim Lernen!
+    </footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // --- Data ---
+    // IMPORTANT: Changed from const to let to allow replacement
+    let vocabulary = [
+        // ... (Initial vocabulary data remains the same as before) ...
+        // Basic Greetings & Common Expressions (10)
+        { german: "Hallo", english: "Hello", pronunciation: "HAH-loh", hinglish: "हालो" },
+        { german: "Guten Morgen", english: "Good morning", pronunciation: "GOO-ten MOR-gen", hinglish: "गूटेन मोरगेन" },
+        { german: "Guten Tag", english: "Good day", pronunciation: "GOO-ten TAHK", hinglish: "गूटेन टाक" },
+        { german: "Guten Abend", english: "Good evening", pronunciation: "GOO-ten AH-bent", hinglish: "गूटेन आबेंट" },
+        { german: "Tschüss", english: "Bye", pronunciation: "CHUUS", hinglish: "चूस" },
+        { german: "Danke", english: "Thank you", pronunciation: "DAHN-kuh", hinglish: "डान्के" },
+        { german: "Bitte", english: "Please / You’re welcome", pronunciation: "BIT-tuh", hinglish: "बिट्टे" },
+        { german: "Ja", english: "Yes", pronunciation: "YAH", hinglish: "या" },
+        { german: "Nein", english: "No", pronunciation: "NYNE", hinglish: "नाईन" },
+        { german: "Entschuldigung", english: "Sorry / Excuse me", pronunciation: "ENT-shool-dee-goong", hinglish: "एंट-शुल्डिगुंग" },
+        // Essential Verbs (10)
+        { german: "sein", english: "to be", pronunciation: "ZINE", hinglish: "ज़ाइन" },
+        { german: "haben", english: "to have", pronunciation: "HAH-ben", hinglish: "हाबेन" },
+        { german: "machen", english: "to do / to make", pronunciation: "MAH-khen", hinglish: "माखेन" },
+        { german: "gehen", english: "to go", pronunciation: "GAY-en", hinglish: "गेहेन" },
+        { german: "kommen", english: "to come", pronunciation: "KOM-men", hinglish: "कॉम्मेन" },
+        { german: "sagen", english: "to say", pronunciation: "ZAH-gen", hinglish: "ज़ागेन" },
+        { german: "können", english: "can / to be able", pronunciation: "KUN-nen", hinglish: "कुन्नेन" },
+        { german: "wollen", english: "to want", pronunciation: "VOL-len", hinglish: "वोल्लेन" },
+        { german: "wissen", english: "to know", pronunciation: "VIS-sen", hinglish: "विस्सेन" },
+        { german: "finden", english: "to find", pronunciation: "FIN-den", hinglish: "फिन्डेन" },
+        // Common Nouns (10)
+        { german: "Mann", english: "man", pronunciation: "MAHN", hinglish: "मान" },
+        { german: "Frau", english: "woman", pronunciation: "FROW", hinglish: "फ्राओ" },
+        { german: "Kind", english: "child", pronunciation: "KINT", hinglish: "किन्ट" },
+        { german: "Freund", english: "friend", pronunciation: "FROYNT", hinglish: "फ्रोयंट" },
+        { german: "Familie", english: "family", pronunciation: "FAH-mee-lee-yeh", hinglish: "फामिलीये" },
+        { german: "Zeit", english: "time", pronunciation: "TSITE", hinglish: "साइट" },
+        { german: "Tag", english: "day", pronunciation: "TAHK", hinglish: "टाक" },
+        { german: "Jahr", english: "year", pronunciation: "YAHR", hinglish: "यार" },
+        { german: "Woche", english: "week", pronunciation: "VOH-kheh", hinglish: "वोख्हे" },
+        { german: "Haus", english: "house", pronunciation: "HOWS", hinglish: "हाउस" },
+         // Common Adjectives (10)
+        { german: "groß", english: "big / tall", pronunciation: "GROHS", hinglish: "ग्रोस" },
+        { german: "klein", english: "small", pronunciation: "KLINE", hinglish: "क्लाइन" },
+        { german: "schön", english: "beautiful / nice", pronunciation: "SHURN", hinglish: "शुर्न" },
+        { german: "gut", english: "good", pronunciation: "GOOT", hinglish: "गूट" },
+        { german: "schlecht", english: "bad", pronunciation: "SHLEKH-t", hinglish: "श्लेख्ट" },
+        { german: "alt", english: "old", pronunciation: "AHLT", hinglish: "आल्ट" },
+        { german: "jung", english: "young", pronunciation: "YOONG", hinglish: "यूंग" },
+        { german: "neu", english: "new", pronunciation: "NOY", hinglish: "नॉय" },
+        { german: "schnell", english: "fast", pronunciation: "SHNEL", hinglish: "श्नेल" },
+        { german: "langsam", english: "slow", pronunciation: "LANG-zahm", hinglish: "लांग्जाम" },
+        // Time Words (5)
+        { german: "heute", english: "today", pronunciation: "HOY-tuh", hinglish: "होइटे" },
+        { german: "morgen", english: "tomorrow", pronunciation: "MOR-gen", hinglish: "मोरगेन" },
+        { german: "gestern", english: "yesterday", pronunciation: "GES-tern", hinglish: "गेस-टर्न" },
+        { german: "jetzt", english: "now", pronunciation: "YET-st", hinglish: "येट्स्ट" },
+        { german: "später", english: "later", pronunciation: "SHPAY-ter", hinglish: "श्पेटर" },
+        // Numbers (1-10) (10)
+        { german: "eins", english: "one", pronunciation: "EYNZ", hinglish: "ऐन्स" },
+        { german: "zwei", english: "two", pronunciation: "TSVY", hinglish: "त्स्वाई" },
+        { german: "drei", english: "three", pronunciation: "DRY", hinglish: "ड्राई" },
+        { german: "vier", english: "four", pronunciation: "FEER", hinglish: "फीयर" },
+        { german: "fünf", english: "five", pronunciation: "FUUNF", hinglish: "फून्फ़" },
+        { german: "sechs", english: "six", pronunciation: "ZEKS", hinglish: "ज़ेक्स" },
+        { german: "sieben", english: "seven", pronunciation: "ZEE-ben", hinglish: "ज़ीबेन" },
+        { german: "acht", english: "eight", pronunciation: "AHKT", hinglish: "आठ्त" },
+        { german: "neun", english: "nine", pronunciation: "NOYN", hinglish: "नॉयन" },
+        { german: "zehn", english: "ten", pronunciation: "TSAYN", hinglish: "त्सेन" },
+        // Common Question Words (10)
+        { german: "wer", english: "who", pronunciation: "VARE", hinglish: "वेयर" },
+        { german: "was", english: "what", pronunciation: "VAS", hinglish: "वास" },
+        { german: "wann", english: "when", pronunciation: "VAHN", hinglish: "वान" },
+        { german: "wo", english: "where", pronunciation: "VOH", hinglish: "वो" },
+        { german: "warum", english: "why", pronunciation: "VAH-room", hinglish: "वारूम" },
+        { german: "wie", english: "how", pronunciation: "VEE", hinglish: "वी" },
+        { german: "welche", english: "which", pronunciation: "VEL-kheh", hinglish: "वेल्खे" },
+        { german: "wie viel", english: "how much", pronunciation: "VEE-FEEL", hinglish: "वी-फील" },
+        { german: "wie viele", english: "how many", pronunciation: "VEE-FEE-leh", hinglish: "वी-फीले" },
+        { german: "wohin", english: "where to", pronunciation: "VOH-hin", hinglish: "वोहिन" },
+        // Common Phrases (5)
+        { german: "Ich verstehe", english: "I understand", pronunciation: "IHKH fer-SHTAY-eh", hinglish: "इख़ फेर-श्टेए" },
+        { german: "Ich weiß nicht", english: "I don't know", pronunciation: "IHKH VYCE nikt", hinglish: "इख़ वाइस निख़्ट" },
+        { german: "Ich liebe dich", english: "I love you", pronunciation: "IHKH LEE-beh dik", hinglish: "इख़ लीबे दिक" },
+        { german: "Es tut mir leid", english: "I'm sorry", pronunciation: "ESS toot meer lite", hinglish: "एस्स तूत मीर लाइट" },
+        { german: "Kein Problem", english: "No problem", pronunciation: "KINE PROB-lem", hinglish: "काइन प्रॉब्लेम" },
+        // More Words to reach 100 (Fill in 30 more based on common beginner words)
+        { german: "sprechen", english: "to speak", pronunciation: "SHPREKH-en", hinglish: "श्प्रेषेन" },
+        { german: "lesen", english: "to read", pronunciation: "LAY-zen", hinglish: "लेज़ेन" },
+        { german: "schreiben", english: "to write", pronunciation: "SHRY-ben", hinglish: "श्राइबेन" },
+        { german: "essen", english: "to eat", pronunciation: "ESS-en", hinglish: "एस्सेन" },
+        { german: "trinken", english: "to drink", pronunciation: "TRINK-en", hinglish: "ट्रिंकेन" },
+        { german: "lernen", english: "to learn", pronunciation: "LERN-en", hinglish: "लेरनेन" },
+        { german: "arbeiten", english: "to work", pronunciation: "AR-by-ten", hinglish: "आरबाइटेन" },
+        { german: "wohnen", english: "to live/reside", pronunciation: "VOH-nen", hinglish: "वोनेन" },
+        { german: "heißen", english: "to be called", pronunciation: "HY-ssen", hinglish: "हाइसन" },
+        { german: "lieben", english: "to love", pronunciation: "LEE-ben", hinglish: "लीबेन" }, //10
+        { german: "sehen", english: "to see", pronunciation: "ZAY-en", hinglish: "ज़ेहेन" },
+        { german: "hören", english: "to hear", pronunciation: "HUR-ren", hinglish: "ह्योरेन" },
+        { german: "kaufen", english: "to buy", pronunciation: "KOW-fen", hinglish: "काउफेन" },
+        { german: "verkaufen", english: "to sell", pronunciation: "FER-kow-fen", hinglish: "फेरकाउफेन" },
+        { german: "bezahlen", english: "to pay", pronunciation: "beh-TSAH-len", hinglish: "बेट्ज़ालें" },
+        { german: "Auto", english: "car", pronunciation: "OW-toh", hinglish: "ऑटो" },
+        { german: "Buch", english: "book", pronunciation: "BOOKH", hinglish: "बूख" },
+        { german: "Wasser", english: "water", pronunciation: "VAS-ser", hinglish: "वास्सर" },
+        { german: "Brot", english: "bread", pronunciation: "BROHT", hinglish: "ब्रोट" },
+        { german: "Stadt", english: "city", pronunciation: "SHTAHT", hinglish: "श्टाट" }, //20
+        { german: "Land", english: "country / land", pronunciation: "LAHNT", hinglish: "लांट" },
+        { german: "Sprache", english: "language", pronunciation: "SHPRAH-kheh", hinglish: "श्प्राखे" },
+        { german: "Musik", english: "music", pronunciation: "moo-ZEEK", hinglish: "मूज़ीक" },
+        { german: "Farbe", english: "color", pronunciation: "FAR-beh", hinglish: "फारबे" },
+        { german: "rot", english: "red", pronunciation: "ROHT", hinglish: "रोट" },
+        { german: "blau", english: "blue", pronunciation: "BLOW", hinglish: "ब्लाउ" },
+        { german: "grün", english: "green", pronunciation: "GRUUN", hinglish: "ग्रून" },
+        { german: "gelb", english: "yellow", pronunciation: "GELP", hinglish: "गेल्प" },
+        { german: "weiß", english: "white", pronunciation: "VICE", hinglish: "वाइस" },
+        { german: "schwarz", english: "black", pronunciation: "SHVARTS", hinglish: "श्वार्त्स" }, //30 - Total 100 words
+    ];
+
+
+    // --- DOM Elements ---
+    const vocabTableBody = document.getElementById('vocabTableBody');
+    const filterInput = document.getElementById('filterInput');
+    const noResultsP = document.getElementById('noResults');
+    const wordCoachCard = document.getElementById('wordCoachCard');
+    const scoreSpan = document.getElementById('score');
+    const streakSpan = document.getElementById('streak');
+    const instructionText = document.getElementById('instructionText');
+    const questionWordSpan = document.getElementById('questionWord');
+    const questionHintSpan = document.getElementById('questionHint');
+    const option1Button = document.getElementById('option1');
+    const option2Button = document.getElementById('option2');
+    const skipButton = document.getElementById('skipButton');
+    const highScoreSpan = document.getElementById('highScore');
+    const correctCountSpan = document.getElementById('correctCount');
+    const attemptedCountSpan = document.getElementById('attemptedCount');
+    const accuracySpan = document.getElementById('accuracy');
+    const resetProgressButton = document.getElementById('resetProgress');
+    // --- NEW DOM Elements for CSV Upload ---
+    const csvFileInput = document.getElementById('csvFileInput');
+    const uploadCsvButton = document.getElementById('uploadCsvButton');
+    const csvStatus = document.getElementById('csvStatus');
+
+
+    // --- State Variables ---
+    let currentWordEntry = null;
+    let correctAnswer = '';
+    let questionLanguage = '';
+    let answerLanguage = '';
+    let score = 0;
+    let streak = 0;
+    let highScore = 0;
+    let totalCorrect = 0;
+    let totalAttempted = 0;
+    let isAnswered = false; // Flag to prevent multiple clicks/actions
+
+    // --- Functions ---
+
+    // Load Vocabulary Table (No changes needed here)
+    function loadVocabulary(filter = '') {
+        vocabTableBody.innerHTML = ''; // Clear existing rows
+        const lowerCaseFilter = filter.toLowerCase().trim();
+        let resultsFound = false;
+
+        // Ensure vocabulary is an array before iterating
+        if (!Array.isArray(vocabulary)) {
+             console.error("Vocabulary data is not an array!", vocabulary);
+             vocabulary = []; // Reset to empty array to prevent further errors
+        }
+
+        vocabulary.forEach(word => {
+            // Basic check for valid word structure
+            if (!word || typeof word.german !== 'string' || typeof word.english !== 'string' || typeof word.hinglish !== 'string') {
+                console.warn("Skipping invalid word object:", word);
+                return; // Skip this iteration
+            }
+
+            if (!lowerCaseFilter ||
+                word.german.toLowerCase().includes(lowerCaseFilter) ||
+                word.english.toLowerCase().includes(lowerCaseFilter) ||
+                (word.pronunciation && word.pronunciation.toLowerCase().includes(lowerCaseFilter)) || // Added check for pronunciation existence
+                word.hinglish.toLowerCase().includes(lowerCaseFilter)
+            ) {
+                const row = vocabTableBody.insertRow();
+                row.className = 'bg-white even:bg-gray-50 hover:bg-indigo-50';
+
+                row.insertCell(0).outerHTML = `<td class="px-4 py-2 font-medium text-gray-900">${word.german}</td>`;
+                row.insertCell(1).outerHTML = `<td class="px-4 py-2">${word.english}</td>`;
+                const pronunciationCell = row.insertCell(2);
+                pronunciationCell.className = "px-4 py-2 hidden md:table-cell";
+                pronunciationCell.textContent = word.pronunciation || '-';
+                row.insertCell(3).outerHTML = `<td class="px-4 py-2">${word.hinglish}</td>`;
+                resultsFound = true;
+            }
+        });
+
+        noResultsP.classList.toggle('hidden', resultsFound);
+        vocabTableBody.classList.toggle('hidden', !resultsFound);
+    }
+
+    // Get a random word (No changes needed here, uses the global `vocabulary` array)
+    function getRandomWord(excludeEntry = null) {
+        // Ensure vocabulary has items before proceeding
+        if (!Array.isArray(vocabulary) || vocabulary.length === 0) {
+            console.warn("Cannot get random word: Vocabulary is empty or invalid.");
+            return null;
+        }
+        if (vocabulary.length === 1 && vocabulary[0] !== excludeEntry) return vocabulary[0];
+        if (vocabulary.length === 1 && vocabulary[0] === excludeEntry) return null;
+
+        let randomEntry;
+        let attempts = 0;
+        const maxAttempts = vocabulary.length * 2;
+
+        do {
+            const randomIndex = Math.floor(Math.random() * vocabulary.length);
+            randomEntry = vocabulary[randomIndex];
+            attempts++;
+            // Ensure the selected entry is valid and has the required properties
+        } while (
+            (!randomEntry || !randomEntry.german || !randomEntry.english || randomEntry === excludeEntry)
+            && attempts < maxAttempts
+        );
+
+        // Handle failure to find a suitable distinct word
+        if (!randomEntry || !randomEntry.german || !randomEntry.english || randomEntry === excludeEntry) {
+             console.warn("Could not find a suitable distinct random word after multiple attempts.");
+             const fallback = vocabulary.find(word => word && word.german && word.english && word !== excludeEntry);
+             return fallback || null; // Return first valid non-excluded word, or null
+        }
+
+        return randomEntry;
+    }
+
+    // Reset button styles (No changes needed)
+    function resetButtonStyles(button) {
+        button.disabled = false;
+         button.classList.remove(
+            'bg-green-100', 'text-green-700', 'border-green-400', 'font-bold', 'animate-pulse-correct',
+            'bg-red-100', 'text-red-700', 'border-red-400', 'animate-pulse-incorrect',
+            'bg-yellow-100', 'text-yellow-800', 'border-yellow-400'
+         );
+         button.classList.add('border-gray-300', 'text-indigo-700', 'hover:bg-indigo-50');
+    }
+
+    // Display the next Word Coach question (Minor change to handle no words)
+    function displayQuestion() {
+        isAnswered = false;
+        currentWordEntry = getRandomWord(); // Uses the current 'vocabulary' array
+
+        resetButtonStyles(option1Button);
+        resetButtonStyles(option2Button);
+
+        if (!currentWordEntry) {
+            // More user-friendly message if vocabulary is empty (e.g., after bad CSV upload)
+            const message = (Array.isArray(vocabulary) && vocabulary.length === 0)
+                            ? "Vocabulary list is empty. Upload a CSV?"
+                            : "Error: No valid words available.";
+            questionWordSpan.textContent = message;
+            questionHintSpan.textContent = "";
+            instructionText.textContent = "Status";
+            option1Button.textContent = "-";
+            option2Button.textContent = "-";
+            option1Button.disabled = true;
+            option2Button.disabled = true;
+            skipButton.disabled = true;
+            console.error("Failed to get a currentWordEntry for the question. Vocabulary empty or invalid.");
+            return;
+        }
+
+        // --- Rest of the function remains the same ---
+        if (Math.random() < 0.5) {
+            questionLanguage = 'german';
+            answerLanguage = 'english';
+            questionWordSpan.textContent = currentWordEntry.german;
+            questionHintSpan.textContent = currentWordEntry.hinglish ? `(${currentWordEntry.hinglish})` : "";
+            correctAnswer = currentWordEntry.english;
+            instructionText.textContent = "Which English word means:";
+        } else {
+            questionLanguage = 'english';
+            answerLanguage = 'german';
+            questionWordSpan.textContent = currentWordEntry.english;
+            questionHintSpan.textContent = "";
+            correctAnswer = currentWordEntry.german;
+            instructionText.textContent = "Which German word means:";
+        }
+
+        let wrongWordEntry = getRandomWord(currentWordEntry);
+        let wrongAnswer = "???";
+
+        if (wrongWordEntry && wrongWordEntry[answerLanguage]) {
+            wrongAnswer = wrongWordEntry[answerLanguage];
+             let attempts = 0;
+             const maxAttempts = 10;
+             while(wrongAnswer === correctAnswer && attempts < maxAttempts && vocabulary.length > 1) {
+                 wrongWordEntry = getRandomWord(currentWordEntry);
+                 if (wrongWordEntry && wrongWordEntry[answerLanguage]) {
+                    wrongAnswer = wrongWordEntry[answerLanguage];
+                 } else {
+                     wrongAnswer = (answerLanguage === 'english' ? "Something else" : "Etwas anderes");
+                     console.warn("Fallback wrong answer used during difference check.");
+                     break;
+                 }
+                 attempts++;
+             }
+             if(wrongAnswer === correctAnswer) {
+                 wrongAnswer = (answerLanguage === 'english' ? "Something else" : "Etwas anderes");
+                  console.warn("Final fallback wrong answer used after difference check.");
+             }
+        } else {
+             wrongAnswer = (answerLanguage === 'english' ? "Something else" : "Etwas anderes");
+             console.warn("Initial fallback wrong answer used (no valid wrongWordEntry or only 1 word).");
+        }
+
+        option1Button.disabled = false;
+        option2Button.disabled = false;
+        skipButton.disabled = false;
+
+        if (Math.random() < 0.5) {
+            option1Button.textContent = correctAnswer;
+            option2Button.textContent = wrongAnswer;
+            option1Button.dataset.isCorrect = "true";
+            option2Button.dataset.isCorrect = "false";
+        } else {
+            option1Button.textContent = wrongAnswer;
+            option2Button.textContent = correctAnswer;
+            option1Button.dataset.isCorrect = "false";
+            option2Button.dataset.isCorrect = "true";
+        }
+    }
+
+    // Apply feedback styles (No changes needed)
+    function applyFeedbackStyles(button, isCorrect) {
+         button.classList.remove('hover:bg-indigo-50', 'border-gray-300', 'text-indigo-700');
+        if (isCorrect) {
+            button.classList.add('bg-green-100', 'text-green-700', 'border-green-400', 'font-bold', 'animate-pulse-correct');
+        } else {
+            button.classList.add('bg-red-100', 'text-red-700', 'border-red-400', 'font-bold', 'animate-pulse-incorrect');
+        }
+         const animationClass = isCorrect ? 'animate-pulse-correct' : 'animate-pulse-incorrect';
+         button.classList.remove(animationClass);
+         void button.offsetWidth;
+         button.classList.add(animationClass);
+    }
+
+    // Handle answer click (No changes needed)
+    function handleAnswer(event) {
+        if (isAnswered || !currentWordEntry) return;
+        isAnswered = true;
+        skipButton.disabled = true;
+        const chosenButton = event.target.closest('.option-button');
+        if (!chosenButton) return;
+        const isCorrect = chosenButton.dataset.isCorrect === "true";
+        totalAttempted++;
+        option1Button.disabled = true;
+        option2Button.disabled = true;
+        applyFeedbackStyles(chosenButton, isCorrect);
+        if (isCorrect) {
+            score++;
+            streak++;
+            totalCorrect++;
+        } else {
+            streak = 0;
+            const correctButton = (option1Button.dataset.isCorrect === "true") ? option1Button : option2Button;
+             correctButton.classList.remove('hover:bg-indigo-50', 'border-gray-300', 'text-indigo-700');
+             correctButton.classList.add('bg-green-100', 'text-green-700', 'border-green-400', 'font-bold');
+        }
+        scoreSpan.textContent = score;
+        streakSpan.textContent = streak;
+        if (score > highScore) highScore = score;
+        updateOverallStats();
+        saveProgress();
+        setTimeout(displayQuestion, isCorrect ? 1200 : 1800);
+    }
+
+    // Handle skip click (No changes needed)
+    function skipQuestion() {
+         if (isAnswered || !currentWordEntry) return;
+         isAnswered = true;
+         option1Button.disabled = true;
+         option2Button.disabled = true;
+         skipButton.disabled = true;
+         streak = 0;
+         streakSpan.textContent = streak;
+         const correctButton = (option1Button.dataset.isCorrect === "true") ? option1Button : option2Button;
+         correctButton.classList.remove('hover:bg-indigo-50', 'border-gray-300', 'text-indigo-700');
+         correctButton.classList.add('bg-yellow-100', 'text-yellow-800', 'border-yellow-400', 'font-bold');
+         saveProgress();
+         setTimeout(displayQuestion, 1500);
+    }
+
+    // Update overall stats display (No changes needed)
+    function updateOverallStats() {
+        highScoreSpan.textContent = highScore;
+        correctCountSpan.textContent = totalCorrect;
+        attemptedCountSpan.textContent = totalAttempted;
+        const accuracy = totalAttempted === 0 ? 0 : Math.round((totalCorrect / totalAttempted) * 100);
+        accuracySpan.textContent = `${accuracy}%`;
+    }
+
+    // Save progress (No changes needed)
+    function saveProgress() {
+        try {
+            const progressData = { highScore, totalCorrect, totalAttempted };
+            localStorage.setItem('germanDeutschCoachProgress', JSON.stringify(progressData));
+        } catch (e) {
+            console.error("Could not save progress to localStorage:", e);
+        }
+    }
+
+    // Load progress (No changes needed)
+    function loadProgress() {
+         try {
+            const savedProgress = localStorage.getItem('germanDeutschCoachProgress');
+            if (savedProgress) {
+                const progressData = JSON.parse(savedProgress);
+                highScore = typeof progressData.highScore === 'number' ? progressData.highScore : 0;
+                totalCorrect = typeof progressData.totalCorrect === 'number' ? progressData.totalCorrect : 0;
+                totalAttempted = typeof progressData.totalAttempted === 'number' ? progressData.totalAttempted : 0;
+            } else {
+                 highScore = 0; totalCorrect = 0; totalAttempted = 0;
+            }
+         } catch (e) {
+             console.error("Could not load progress from localStorage:", e);
+             highScore = 0; totalCorrect = 0; totalAttempted = 0;
+         }
+        score = 0; streak = 0;
+        updateOverallStats();
+        scoreSpan.textContent = score;
+        streakSpan.textContent = streak;
+    }
+
+    // Reset progress (No changes needed)
+    function resetAllStats() {
+        if (window.confirm("Are you sure you want to reset all stats (High Score, Total Correct, Total Attempted)? This action cannot be undone.")) {
+            highScore = 0; totalCorrect = 0; totalAttempted = 0; score = 0; streak = 0;
+            try { localStorage.removeItem('germanDeutschCoachProgress'); }
+            catch (e) { console.error("Could not remove progress from localStorage:", e); }
+            updateOverallStats();
+            scoreSpan.textContent = score; streakSpan.textContent = streak;
+            // Optionally, reload original vocab here if you want reset to also undo CSV uploads
+            // vocabulary = [ ... original list ... ]; // Uncomment and fill if needed
+            loadVocabulary(); // Refresh table with current (potentially reset) vocab
+            displayQuestion();
+        }
+    }
+
+    // --- NEW CSV Handling Functions ---
+
+    /**
+     * Parses CSV text content into an array of vocabulary objects.
+     * Assumes header row: german,english,pronunciation,hinglish
+     * @param {string} csvString - The raw CSV text content.
+     * @returns {Array|null} An array of vocabulary objects or null if parsing fails.
+     */
+    function parseCSV(csvString) {
+        try {
+            const lines = csvString.replace(/\r\n/g, '\n').split('\n');
+            if (lines.length < 2) {
+                throw new Error("CSV must have at least a header row and one data row.");
+            }
+
+            // Process header
+            const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+            const germanIndex = headers.indexOf('german');
+            const englishIndex = headers.indexOf('english');
+            const pronunciationIndex = headers.indexOf('pronunciation');
+            const hinglishIndex = headers.indexOf('hinglish');
+
+            if (germanIndex === -1 || englishIndex === -1 || hinglishIndex === -1) {
+                throw new Error("CSV header is missing required columns: 'german', 'english', 'hinglish'. 'pronunciation' is optional but recommended.");
+            }
+
+            const newVocabulary = [];
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue; // Skip empty lines
+
+                const values = line.split(',').map(v => v.trim());
+
+                // Basic check: ensure essential columns have data
+                if (!values[germanIndex] || !values[englishIndex]) {
+                    console.warn(`Skipping row ${i + 1}: Missing German or English value.`);
+                    continue;
+                }
+
+                 // Handle potential quotes around fields (basic)
+                const cleanValues = values.map(val => {
+                    if (val.startsWith('"') && val.endsWith('"')) {
+                        return val.slice(1, -1).replace(/""/g, '"'); // Remove surrounding quotes and unescape double quotes
+                    }
+                    return val;
+                });
+
+
+                const wordEntry = {
+                    german: cleanValues[germanIndex],
+                    english: cleanValues[englishIndex],
+                    // Use pronunciationIndex only if it exists, otherwise default to empty string
+                    pronunciation: (pronunciationIndex !== -1 && cleanValues[pronunciationIndex]) ? cleanValues[pronunciationIndex] : '',
+                    hinglish: cleanValues[hinglishIndex] || '', // Default to empty if missing
+                };
+                newVocabulary.push(wordEntry);
+            }
+
+            if (newVocabulary.length === 0) {
+                throw new Error("No valid vocabulary entries found in the CSV data rows.");
+            }
+
+            return newVocabulary;
+        } catch (error) {
+            console.error("Error parsing CSV:", error);
+            csvStatus.textContent = `Error parsing CSV: ${error.message}`;
+            csvStatus.className = 'text-sm mt-2 h-5 text-red-600 font-medium'; // Error style
+            return null; // Indicate failure
+        }
+    }
+
+    /**
+     * Handles the file upload process when the button is clicked.
+     */
+    function handleFileUpload() {
+        csvStatus.textContent = ''; // Clear previous status
+        csvStatus.className = 'text-sm mt-2 h-5'; // Reset style
+
+        const file = csvFileInput.files[0];
+
+        if (!file) {
+            csvStatus.textContent = 'Please select a CSV file first.';
+            csvStatus.className = 'text-sm mt-2 h-5 text-yellow-700 font-medium';
+            return;
+        }
+
+        // Basic check for file extension (optional but good practice)
+        if (!file.name.toLowerCase().endsWith('.csv')) {
+             csvStatus.textContent = 'Invalid file type. Please upload a .csv file.';
+             csvStatus.className = 'text-sm mt-2 h-5 text-red-600 font-medium';
+             csvFileInput.value = null; // Clear selection
+             return;
+        }
+
+
+        const reader = new FileReader();
+
+        reader.onload = (event) => {
+            const csvContent = event.target.result;
+            const parsedData = parseCSV(csvContent);
+
+            if (parsedData) {
+                // Success! Replace vocabulary, update UI
+                vocabulary = parsedData; // Replace the global vocabulary array
+                loadVocabulary();       // Reload the table
+                filterInput.value = ''; // Clear filter
+                displayQuestion();      // Display a new question from the new list
+                csvStatus.textContent = `Successfully loaded ${vocabulary.length} words from ${file.name}.`;
+                csvStatus.className = 'text-sm mt-2 h-5 text-green-600 font-medium'; // Success style
+                csvFileInput.value = null; // Clear the file input
+            }
+            // If parseCSV returned null, it already set the error message
+        };
+
+        reader.onerror = (event) => {
+            console.error("File reading error:", event.target.error);
+            csvStatus.textContent = 'Error reading the selected file.';
+            csvStatus.className = 'text-sm mt-2 h-5 text-red-600 font-medium';
+        };
+
+        // Read the file as text
+        reader.readAsText(file);
+    }
+
+
+    // --- Event Listeners ---
+    filterInput.addEventListener('input', (e) => loadVocabulary(e.target.value));
+    option1Button.addEventListener('click', handleAnswer);
+    option2Button.addEventListener('click', handleAnswer);
+    skipButton.addEventListener('click', skipQuestion);
+    resetProgressButton.addEventListener('click', resetAllStats);
+    // --- NEW Event Listener for CSV Upload ---
+    uploadCsvButton.addEventListener('click', handleFileUpload);
+
+
+    // --- Initial Setup ---
+    loadVocabulary(); // Load table first (with initial or potentially empty vocab)
+    loadProgress();   // Then load stats
+    displayQuestion(); // Then display the first question (handles empty vocab state)
+
+}); // End DOMContentLoaded
+</script>
+
+</body>
+</html>
